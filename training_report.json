@@ -1,0 +1,273 @@
+{
+  "meta": {
+    "algorithm": "tabular self-play value learning, symmetry-canonical states",
+    "encoding": "board from the mover's perspective; 8-fold symmetry reduction",
+    "target": "mixed TD negamax target and Monte-Carlo outcome (lambda)",
+    "rewards": "+1 win / 0 draw / -1 loss, gamma 1.0, epsilon and lr decayed",
+    "transforms": [
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      [
+        0,
+        3,
+        6,
+        1,
+        4,
+        7,
+        2,
+        5,
+        8
+      ],
+      [
+        2,
+        1,
+        0,
+        5,
+        4,
+        3,
+        8,
+        7,
+        6
+      ],
+      [
+        2,
+        5,
+        8,
+        1,
+        4,
+        7,
+        0,
+        3,
+        6
+      ],
+      [
+        6,
+        3,
+        0,
+        7,
+        4,
+        1,
+        8,
+        5,
+        2
+      ],
+      [
+        6,
+        7,
+        8,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2
+      ],
+      [
+        8,
+        5,
+        2,
+        7,
+        4,
+        1,
+        6,
+        3,
+        0
+      ],
+      [
+        8,
+        7,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1,
+        0
+      ]
+    ],
+    "stateCount": 627,
+    "reachablePositions": 5478,
+    "episodes": 400000,
+    "lambda": 0.5,
+    "seed": 7,
+    "trainSeconds": 9.2,
+    "trainedAt": "2026-09-16T16:33:48",
+    "rawPolicyVerifiedNeverLoses": true,
+    "shieldOverrides": 0,
+    "shieldVerification": {
+      "as_X": {
+        "agent_wins": 72,
+        "draws": 4,
+        "agent_losses": 0,
+        "games": 76,
+        "illegal_or_missing": 0,
+        "never_loses": true,
+        "agent": "X (first)"
+      },
+      "as_O": {
+        "agent_wins": 342,
+        "draws": 115,
+        "agent_losses": 0,
+        "games": 457,
+        "illegal_or_missing": 0,
+        "never_loses": true,
+        "agent": "O (second)"
+      },
+      "never_loses": true
+    },
+    "verifiedAsX": true,
+    "verifiedAsO": true,
+    "verificationGamesAsX": 76,
+    "verificationGamesAsO": 457,
+    "vsRandom": {
+      "1": {
+        "wins": 1980,
+        "draws": 20,
+        "losses": 0
+      },
+      "2": {
+        "wins": 1732,
+        "draws": 268,
+        "losses": 0
+      }
+    },
+    "vsPerfect": {
+      "1": {
+        "wins": 0,
+        "draws": 400,
+        "losses": 0
+      },
+      "2": {
+        "wins": 0,
+        "draws": 400,
+        "losses": 0
+      }
+    },
+    "learningCurve": [
+      {
+        "episodes": 1000,
+        "as_X_never_loses": false,
+        "as_O_never_loses": false,
+        "loss_lines_as_X": 10,
+        "loss_lines_as_O": 166,
+        "vs_random": {
+          "1": {
+            "wins": 1905,
+            "draws": 0,
+            "losses": 95
+          },
+          "2": {
+            "wins": 1431,
+            "draws": 145,
+            "losses": 424
+          }
+        }
+      },
+      {
+        "episodes": 20000,
+        "as_X_never_loses": false,
+        "as_O_never_loses": false,
+        "loss_lines_as_X": 1,
+        "loss_lines_as_O": 81,
+        "vs_random": {
+          "1": {
+            "wins": 1915,
+            "draws": 75,
+            "losses": 10
+          },
+          "2": {
+            "wins": 1454,
+            "draws": 307,
+            "losses": 239
+          }
+        }
+      }
+    ]
+  },
+  "rawPolicyVerification": {
+    "as_X": {
+      "agent_wins": 72,
+      "draws": 4,
+      "agent_losses": 0,
+      "games": 76,
+      "illegal_or_missing": 0,
+      "never_loses": true,
+      "agent": "X (first)"
+    },
+    "as_O": {
+      "agent_wins": 342,
+      "draws": 115,
+      "agent_losses": 0,
+      "games": 457,
+      "illegal_or_missing": 0,
+      "never_loses": true,
+      "agent": "O (second)"
+    },
+    "never_loses": true
+  },
+  "shieldVerification": {
+    "as_X": {
+      "agent_wins": 72,
+      "draws": 4,
+      "agent_losses": 0,
+      "games": 76,
+      "illegal_or_missing": 0,
+      "never_loses": true,
+      "agent": "X (first)"
+    },
+    "as_O": {
+      "agent_wins": 342,
+      "draws": 115,
+      "agent_losses": 0,
+      "games": 457,
+      "illegal_or_missing": 0,
+      "never_loses": true,
+      "agent": "O (second)"
+    },
+    "never_loses": true
+  },
+  "shieldOverrides": 0,
+  "stateStyle": {
+    "winning_states": 390,
+    "drawn_states": 237,
+    "total_states": 627
+  },
+  "vsRandom": {
+    "1": {
+      "wins": 1980,
+      "draws": 20,
+      "losses": 0
+    },
+    "2": {
+      "wins": 1732,
+      "draws": 268,
+      "losses": 0
+    }
+  },
+  "vsPerfect": {
+    "1": {
+      "wins": 0,
+      "draws": 400,
+      "losses": 0
+    },
+    "2": {
+      "wins": 0,
+      "draws": 400,
+      "losses": 0
+    }
+  },
+  "levelSizes": {
+    "novice": 627,
+    "medium": 627,
+    "perfect": 627
+  }
+}

@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tic-Tac-Toe vs a self-play RL agent</title>
+<style>
+  :root {
+    --bg: #070b16;
+    --panel: rgba(255, 255, 255, 0.045);
+    --panel-strong: rgba(255, 255, 255, 0.075);
+    --line: rgba(255, 255, 255, 0.09);
+    --text: #e8ecf8;
+    --muted: #8b97b8;
+    --human: #22d3ee;
+    --agent: #f472b6;
+    --good: #34d399;
+    --bad: #fb7185;
+    --accent: linear-gradient(135deg, #38bdf8, #a78bfa 55%, #f472b6);
+    --radius: 18px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100%;
+    background:
+      radial-gradient(1100px 620px at 12% -8%, rgba(56, 189, 248, 0.16), transparent 60%),
+      radial-gradient(900px 560px at 92% 4%, rgba(244, 114, 182, 0.14), transparent 62%),
+      radial-gradient(800px 700px at 50% 110%, rgba(167, 139, 250, 0.12), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    justify-content: center;
+    padding: 30px 18px 46px;
+  }
+
+  .app { width: 100%; max-width: 940px; }
+
+  /* ------------------------------------------------------------ header */
+
+  header { margin-bottom: 22px; }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px;
+  }
+  .eyebrow .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--good); box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.14);
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(24px, 3.4vw, 33px);
+    font-weight: 680;
+    letter-spacing: -0.02em;
+  }
+  h1 span {
+    background: var(--accent);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  .sub { color: var(--muted); max-width: 62ch; font-size: 14px; }
+
+  /* ------------------------------------------------------------- layout */
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(300px, 1fr) 320px;
+    gap: 20px;
+    align-items: start;
+    margin-top: 22px;
+  }
+  @media (max-width: 780px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+    backdrop-filter: blur(14px);
+  }
+
+  /* -------------------------------------------------------------- board */
+
+  .board-wrap { display: flex; flex-direction: column; gap: 14px; }
+
+  .turnbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; min-height: 26px;
+  }
+  .status { font-weight: 620; font-size: 15.5px; display: flex; align-items: center; gap: 9px; }
+  .status .swatch { width: 10px; height: 10px; border-radius: 3px; background: var(--muted); }
+  .status.human { color: var(--human); } .status.human .swatch { background: var(--human); }
+  .status.agent { color: var(--agent); } .status.agent .swatch { background: var(--agent); }
+  .status.done  { color: var(--text); }  .status.done .swatch { background: var(--good); }
+  .status.lost  { color: var(--bad); }   .status.lost .swatch { background: var(--bad); }
+
+  .thinking { display: none; align-items: center; gap: 6px; color: var(--muted); font-size: 12.5px; }
+  .thinking.on { display: inline-flex; }
+  .thinking i {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--agent);
+    animation: pulse 1s infinite ease-in-out;
+  }
+  .thinking i:nth-child(2) { animation-delay: 0.15s; }
+  .thinking i:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes pulse { 0%, 100% { opacity: 0.25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    aspect-ratio: 1 / 1;
+    width: 100%;
+  }
+
+  .cell {
+    position: relative;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02));
+    cursor: pointer;
+    transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    font: inherit;
+    color: inherit;
+  }
+  .cell:disabled { cursor: default; }
+  .cell.open:not(:disabled):hover {
+    border-color: rgba(34, 211, 238, 0.55);
+    background: linear-gradient(160deg, rgba(34, 211, 238, 0.16), rgba(255,255,255,0.03));
+    transform: translateY(-2px);
+  }
+  .cell.open:not(:disabled):hover .ghost { opacity: 0.3; }
+
+  .cell.win {
+    border-color: rgba(52, 211, 153, 0.7);
+    background: linear-gradient(160deg, rgba(52, 211, 153, 0.2), rgba(255,255,255,0.03));
+    box-shadow: 0 0 26px rgba(52, 211, 153, 0.22);
+  }
+  .cell.lose {
+    border-color: rgba(251, 113, 133, 0.65);
+    background: linear-gradient(160deg, rgba(251, 113, 133, 0.18), rgba(255,255,255,0.03));
+  }
+
+  .glyph { width: 58%; height: 58%; }
+  .glyph line, .glyph circle { fill: none; stroke-width: 11; stroke-linecap: round; }
+  .glyph line { stroke-dasharray: 76; stroke-dashoffset: 76; animation: draw 0.2s ease forwards; }
+  .glyph circle { stroke-dasharray: 170; stroke-dashoffset: 170; animation: draw 0.28s ease forwards; }
+  /* Colour marks by who placed them, not by X/O: the human may be either. */
+  .glyph line, .glyph circle { stroke: currentColor; }
+  .owner-human .glyph { color: var(--human); filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.35)); }
+  .owner-agent .glyph { color: var(--agent); filter: drop-shadow(0 0 10px rgba(244, 114, 182, 0.35)); }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  /* Ghost preview of the mark the human is about to place. */
+  .ghost { width: 58%; height: 58%; opacity: 0; transition: opacity 0.15s ease; color: var(--human); }
+  .ghost line, .ghost circle { fill: none; stroke: currentColor; stroke-width: 11; stroke-linecap: round; }
+
+  .heat {
+    position: absolute; inset: 0;
+    display: none;
+    place-items: center;
+    font-size: 13px; font-weight: 640;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+  .cell.heat-on .heat { display: grid; }
+  .cell.heat-on .ghost { opacity: 0; }
+  .heat.pos { color: var(--good); }
+  .heat.zero { color: var(--muted); }
+  .heat.neg { color: var(--bad); }
+  .cell.heat-on.h-pos { background: linear-gradient(160deg, rgba(52,211,153,0.14), rgba(255,255,255,0.02)); }
+  .cell.heat-on.h-neg { background: linear-gradient(160deg, rgba(251,113,133,0.13), rgba(255,255,255,0.02)); }
+
+  .legend { color: var(--muted); font-size: 12.5px; min-height: 18px; }
+  .legend b { color: var(--text); font-weight: 600; }
+
+  /* -------------------------------------------------------------- panel */
+
+  .panel { display: flex; flex-direction: column; gap: 16px; }
+
+  .score {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    text-align: center;
+  }
+  .score div {
+    background: var(--panel-strong);
+    border: 1px solid var(--line);
+    border-radius: 13px; padding: 10px 6px;
+  }
+  .score .n { font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .score .k { font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+  .score .you .n { color: var(--human); }
+  .score .agent .n { color: var(--agent); }
+
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field > label {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+  }
+
+  .seg { display: grid; grid-auto-flow: column; gap: 6px; background: rgba(0,0,0,0.25); border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
+  .seg button {
+    appearance: none; border: 0; background: transparent; color: var(--muted);
+    font: inherit; font-size: 13px; font-weight: 600; padding: 8px 6px;
+    border-radius: 9px; cursor: pointer; transition: all 0.15s ease;
+  }
+  .seg button:hover { color: var(--text); }
+  .seg button[aria-pressed="true"] { background: var(--panel-strong); color: var(--text); box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset; }
+  .seg button[aria-pressed="true"][data-level="perfect"] { background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(244,114,182,0.25)); }
+  .seg.wide { grid-auto-flow: row; grid-template-columns: 1fr 1fr; }
+
+  .level-note {
+    font-size: 12.5px; color: var(--muted);
+    border-left: 2px solid var(--line); padding-left: 10px; min-height: 34px;
+  }
+  .level-note b { color: var(--text); font-weight: 620; }
+
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+
+  button.primary, button.ghost-btn {
+    appearance: none; font: inherit; font-weight: 620; font-size: 14px;
+    border-radius: 12px; padding: 11px 14px; cursor: pointer;
+    transition: transform 0.12s ease, filter 0.15s ease, background 0.15s ease;
+  }
+  button.primary { border: 0; background: var(--accent); color: #08111f; }
+  button.primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  button.ghost-btn { border: 1px solid var(--line); background: var(--panel-strong); color: var(--text); }
+  button.ghost-btn:hover { background: rgba(255,255,255,0.11); }
+  button[aria-pressed="true"].ghost-btn { border-color: rgba(56,189,248,0.5); color: #bae6fd; }
+
+  .proof {
+    font-size: 12.5px; color: var(--muted);
+    background: rgba(52, 211, 153, 0.07);
+    border: 1px solid rgba(52, 211, 153, 0.22);
+    border-radius: 12px; padding: 11px 12px;
+  }
+  .proof b { color: #a7f3d0; font-weight: 640; }
+  .proof code { color: var(--text); font-size: 12px; }
+
+  details.how {
+    margin-top: 20px; border: 1px solid var(--line); border-radius: 14px;
+    background: var(--panel); padding: 0 16px;
+  }
+  details.how summary {
+    cursor: pointer; padding: 13px 0; font-weight: 620; font-size: 14px;
+    list-style: none; display: flex; align-items: center; gap: 9px;
+  }
+  details.how summary::-webkit-details-marker { display: none; }
+  details.how summary::before { content: "▸"; color: var(--muted); transition: transform 0.15s ease; }
+  details.how[open] summary::before { transform: rotate(90deg); }
+  details.how .body { padding: 0 0 16px; color: var(--muted); font-size: 13.5px; }
+  details.how .body p { margin: 0 0 10px; }
+  details.how .body code {
+    background: rgba(255,255,255,0.07); padding: 1px 5px; border-radius: 5px;
+    font-size: 12.5px; color: #cfe1ff;
+  }
+  details.how table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 4px 0 12px; }
+  details.how th, details.how td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  details.how th { color: var(--muted); font-weight: 600; }
+  details.how td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  kbd {
+    background: rgba(255,255,255,0.08); border: 1px solid var(--line);
+    border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; font-size: 11.5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="eyebrow"><span class="dot"></span><span id="badge">self-play RL · verified never loses</span></div>
+    <h1>Play tic-tac-toe against a <span>self-play RL agent</span></h1>
+    <p class="sub" id="tagline">
+      The agent learned by playing itself — hundreds of thousands of games, no human examples and no
+      hard-coded strategy. It stores a value for every position and plays the best move it found.
+    </p>
+  </header>
+
+  <div class="layout">
+    <section class="card board-wrap">
+      <div class="turnbar">
+        <div class="status" id="status"><span class="swatch"></span><span id="statusText">Your move</span></div>
+        <div class="thinking" id="thinking"><span>agent thinking</span><i></i><i></i><i></i></div>
+      </div>
+
+      <div class="board" id="board" role="grid" aria-label="tic-tac-toe board"></div>
+
+      <div class="legend" id="legend">
+        You are <b id="youAre">X</b> · click a square, or press <kbd>1</kbd>–<kbd>9</kbd>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="card panel">
+        <div class="score">
+          <div class="you"><div class="n" id="scoreYou">0</div><div class="k">You</div></div>
+          <div><div class="n" id="scoreDraw">0</div><div class="k">Draws</div></div>
+          <div class="agent"><div class="n" id="scoreAgent">0</div><div class="k">Agent</div></div>
+        </div>
+
+        <div class="field">
+          <label for="levels">Opponent</label>
+          <div class="seg" id="levels" role="group" aria-label="Opponent strength"></div>
+          <div class="level-note" id="levelNote"></div>
+        </div>
+
+        <div class="field">
+          <label>You play</label>
+          <div class="seg wide" id="sides" role="group" aria-label="Choose your mark">
+            <button type="button" data-side="1">X · first</button>
+            <button type="button" data-side="2">O · second</button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="newGame" type="button">New game</button>
+          <button class="ghost-btn" id="resetScore" type="button">Reset score</button>
+          <button class="ghost-btn" id="toggleHeat" type="button" aria-pressed="false">Show move values</button>
+          <button class="ghost-btn" id="toggleAuto" type="button" aria-pressed="false">Agent vs itself</button>
+        </div>
+
+        <div class="proof" id="proof"></div>
+      </div>
+    </aside>
+  </div>
+
+  <details class="how">
+    <summary>How this agent was trained, and why it cannot lose</summary>
+    <div class="body" id="howBody"></div>
+  </details>
+</div>
+
+<script src="policy.js"></script>
+<script src="game.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var MODEL = window.TTT_MODEL;
+  var T = window.TTT;
+
+  /* --------------------------------------------------------------- state */
+
+  var state = {
+    board: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    human: 1,
+    turn: 1,
+    over: false,
+    busy: false,
+    level: 'perfect',
+    heat: false,
+    auto: false,
+    score: { win: 0, draw: 0, loss: 0 },
+    gen: 0
+  };
+
+  var AGENT_DELAY = 420;
+  var AUTO_DELAY = 620;
+
+  var el = {
+    board: document.getElementById('board'),
+    status: document.getElementById('status'),
+    statusText: document.getElementById('statusText'),
+    thinking: document.getElementById('thinking'),
+    legend: document.getElementById('legend'),
+    youAre: document.getElementById('youAre'),
+    levels: document.getElementById('levels'),
+    levelNote: document.getElementById('levelNote'),
+    sides: document.getElementById('sides'),
+    newGame: document.getElementById('newGame'),
+    resetScore: document.getElementById('resetScore'),
+    toggleHeat: document.getElementById('toggleHeat'),
+    toggleAuto: document.getElementById('toggleAuto'),
+    proof: document.getElementById('proof'),
+    scoreYou: document.getElementById('scoreYou'),
+    scoreDraw: document.getElementById('scoreDraw'),
+    scoreAgent: document.getElementById('scoreAgent'),
+    howBody: document.getElementById('howBody'),
+    badge: document.getElementById('badge')
+  };
+
+  /* ------------------------------------------------------------ svg marks */
+
+  var X_SVG = '<svg class="glyph x" viewBox="0 0 100 100" aria-hidden="true">' +
+    '<line x1="25" y1="25" x2="75" y2="75"></line>' +
+    '<line x1="75" y1="25" x2="25" y2="75"></line></svg>';
+  var O_SVG = '<svg class="glyph o" viewBox="0 0 100 100" aria-hidden="true">' +
+    '<circle cx="50" cy="50" r="26"></circle></svg>';
+  var X_GHOST = '<svg class="ghost" viewBox="0 0 100 100" aria-hidden="true">' +
+    '<line x1="25" y1="25" x2="75" y2="75"></line>' +
+    '<line x1="75" y1="25" x2="25" y2="75"></line></svg>';
+  var O_GHOST = '<svg class="ghost" viewBox="0 0 100 100" aria-hidden="true">' +
+    '<circle cx="50" cy="50" r="26"></circle></svg>';
+
+  /* -------------------------------------------------------------- helpers */
+
+  function agentMark() { return state.human === 1 ? 2 : 1; }
+  function level() { return T.levelById(MODEL, state.level); }
+  function humanTurn() { return !state.auto && !state.over && state.turn === state.human; }
+  function agentTurn() { return !state.over && (state.auto || state.turn === agentMark()); }
+
+  /* ------------------------------------------------------------ the board */
+
+  var cells = [];
+  (function buildBoard() {
+    for (var i = 0; i < 9; i++) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cell';
+      b.dataset.i = String(i);
+      b.setAttribute('role', 'gridcell');
+      b.setAttribute('aria-label', 'square ' + (i + 1));
+      b.innerHTML = '<span class="mark"></span><span class="heat"></span>';
+      b.addEventListener('click', onCellClick);
+      el.board.appendChild(b);
+      cells.push(b);
+    }
+  })();
+
+  function onCellClick(e) {
+    var i = Number(e.currentTarget.dataset.i);
+    if (!humanTurn() || state.board[i] !== 0) return;
+    play(i, state.human);
+  }
+
+  /* ------------------------------------------------------------ rendering */
+
+  function render() {
+    var win = T.winningLine(state.board);
+    var heat = (state.heat && agentTurn()) ? T.agentValues(
+      state.board, state.auto ? state.turn : agentMark(), MODEL, state.level) : null;
+
+    for (var i = 0; i < 9; i++) {
+      var cell = cells[i], v = state.board[i];
+      var markHtml = '';
+      if (v) {
+        markHtml = (v === 1 ? X_SVG : O_SVG);
+      } else if (humanTurn()) {
+        markHtml = (state.human === 1 ? X_GHOST : O_GHOST);
+      }
+      cell.querySelector('.mark').innerHTML = markHtml;
+      cell.classList.toggle('open', v === 0);
+      cell.classList.toggle('owner-human', v === state.human);
+      cell.classList.toggle('owner-agent', v !== 0 && v === agentMark());
+      cell.classList.toggle('win', !!win && win.indexOf(i) >= 0);
+      cell.classList.toggle('lose', !!win && win.indexOf(i) >= 0 && v === agentMark());
+      cell.disabled = !humanTurn() || v !== 0;
+
+      var heatEl = cell.querySelector('.heat');
+      heatEl.className = 'heat';
+      cell.classList.remove('heat-on', 'h-pos', 'h-neg');
+      if (heat && !v && heat[i] !== null && heat[i] !== undefined) {
+        var val = heat[i];
+        heatEl.textContent = (val > 0 ? '+' : '') + val.toFixed(2);
+        heatEl.classList.add(val > 0.01 ? 'pos' : (val < -0.01 ? 'neg' : 'zero'));
+        cell.classList.add('heat-on', val > 0.01 ? 'h-pos' : (val < -0.01 ? 'h-neg' : 'h-zero'));
+      }
+    }
+
+    el.thinking.classList.toggle('on', state.busy || (agentTurn() && !state.over));
+
+    var cls = 'status', text;
+    if (state.over) {
+      cls += state.over === 'win' ? ' done' : (state.over === 'loss' ? ' lost' : ' done');
+      text = state.over === 'win' ? 'You win! 🎉'
+        : state.over === 'loss' ? 'The agent wins.'
+          : 'A draw — the perfect result.';
+      if (state.auto) text = state.over === 'draw' ? 'Draw — both sides played perfectly.' : 'Game over.';
+    } else if (state.auto) {
+      cls += ' agent';
+      text = (state.turn === 1 ? 'X' : 'O') + ' (agent) to move';
+    } else if (state.turn === state.human) {
+      cls += ' human';
+      text = 'Your move';
+    } else {
+      cls += ' agent';
+      text = 'Agent to move';
+    }
+    el.status.className = cls;
+    el.statusText.textContent = text;
+
+    el.youAre.textContent = state.human === 1 ? 'X (first)' : 'O (second)';
+    if (state.auto) {
+      el.legend.innerHTML = 'Self-play demo: the agent is playing both sides.';
+    } else {
+      var hint = '';
+      if (state.heat && !level().values) {
+        hint = ' <span style="opacity:.7">— move values exist for the Perfect level only</span>';
+      } else if (state.heat && !agentTurn()) {
+        hint = ' <span style="opacity:.7">— move values appear while the agent is choosing</span>';
+      }
+      el.legend.innerHTML = 'You are <b>' + el.youAre.textContent +
+        '</b> · click a square, or press <kbd>1</kbd>–<kbd>9</kbd>' + hint;
+    }
+
+    el.scoreYou.textContent = state.score.win;
+    el.scoreDraw.textContent = state.score.draw;
+    el.scoreAgent.textContent = state.score.loss;
+
+    for (var j = 0; j < el.levels.children.length; j++) {
+      var btn = el.levels.children[j];
+      btn.setAttribute('aria-pressed', String(btn.dataset.level === state.level));
+    }
+    for (var k = 0; k < el.sides.children.length; k++) {
+      var s = el.sides.children[k];
+      s.setAttribute('aria-pressed', String(Number(s.dataset.side) === state.human));
+    }
+    el.levelNote.innerHTML = levelNote();
+  }
+
+  function levelNote() {
+    var lv = level();
+    var extra = lv.id === 'perfect'
+      ? '<b>Verified:</b> an exhaustive search of the whole game tree finds no way for the agent to lose.'
+      : lv.id === 'medium'
+        ? 'Still learning: a sharp player can punish it.'
+        : 'Early in training: it makes real mistakes.';
+    return '<b>' + lv.label + '</b> — ' + lv.subtitle + '. ' + extra;
+  }
+
+  /* ---------------------------------------------------------------- moves */
+
+  function play(i, player) {
+    state.board[i] = player;
+    state.lastMove = i;
+    var w = T.winner(state.board);
+    state.turn = T.other(player);
+    if (w !== null) finish(w);
+    render();
+    if (!state.over) pump();
+  }
+
+  function finish(result) {
+    state.over = result === 0 ? 'draw' : (result === state.human ? 'win' : 'loss');
+    if (state.auto) {
+      // Keep the self-play demo running: show the result, then deal a new game.
+      var gen = state.gen;
+      setTimeout(function () {
+        if (state.auto && gen === state.gen) newGame(true);
+      }, 1400);
+      return;
+    }
+    if (result === state.human) state.score.win++;
+    else if (result === 0) state.score.draw++;
+    else state.score.loss++;
+  }
+
+  /* Schedule the agent's next move, if it is the agent's turn. */
+  function pump() {
+    if (state.over || !agentTurn()) return;
+    var gen = state.gen;
+    state.busy = true;
+    el.thinking.classList.add('on');
+    var who = state.auto ? state.turn : agentMark();
+    var delay = state.auto ? AUTO_DELAY : AGENT_DELAY;
+    setTimeout(function () {
+      if (gen !== state.gen) return;               // board was reset meanwhile
+      var move = T.agentMove(state.board, who, MODEL, state.level);
+      state.busy = false;
+      if (move < 0) { state.over = 'draw'; render(); return; }
+      play(move, who);
+    }, delay);
+  }
+
+  function newGame(keepScore) {
+    state.gen++;
+    state.board = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    state.turn = 1;
+    state.over = false;
+    state.busy = false;
+    state.lastMove = null;
+    if (!keepScore) state.score = { win: 0, draw: 0, loss: 0 };
+    render();
+    pump();
+  }
+
+  /* ------------------------------------------------------------------ UI */
+
+  (function buildLevelButtons() {
+    MODEL.levels.forEach(function (lv) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.level = lv.id;
+      b.textContent = lv.label;
+      b.title = lv.subtitle;
+      b.addEventListener('click', function () {
+        state.level = lv.id;
+        newGame(true);
+      });
+      el.levels.appendChild(b);
+    });
+  })();
+
+  Array.prototype.forEach.call(el.sides.children, function (btn) {
+    btn.addEventListener('click', function () {
+      var side = Number(btn.dataset.side);
+      if (side === state.human) return;
+      state.human = side;
+      newGame(true);
+    });
+  });
+
+  el.newGame.addEventListener('click', function () { newGame(true); });
+  el.resetScore.addEventListener('click', function () { newGame(false); });
+
+  el.toggleHeat.addEventListener('click', function () {
+    state.heat = !state.heat;
+    el.toggleHeat.setAttribute('aria-pressed', String(state.heat));
+    render();
+  });
+
+  el.toggleAuto.addEventListener('click', function () {
+    state.auto = !state.auto;
+    el.toggleAuto.setAttribute('aria-pressed', String(state.auto));
+    newGame(true);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key >= '1' && e.key <= '9' && humanTurn()) {
+      var i = Number(e.key) - 1;
+      if (state.board[i] === 0) play(i, state.human);
+    } else if (e.key === 'n' || e.key === 'N') {
+      newGame(true);
+    }
+  });
+
+  /* ------------------------------------------------- verification summary */
+
+  (function proofAndDocs() {
+    var m = MODEL.meta;
+    var v = m.shieldVerification;
+    var lines = v.as_X.games + v.as_O.games;
+    var overrides = m.shieldOverrides;
+    var lvPerfect = T.levelById(MODEL, 'perfect');
+    var shieldNote = overrides === 0
+      ? 'The learned policy was already safe in all ' + m.stateCount +
+        ' positions, so the shield never had to intervene — it is a proof-carrying safety net.'
+      : 'The shield corrected the learned move in ' + overrides + ' of ' + m.stateCount + ' positions.';
+
+    el.proof.innerHTML =
+      '<b>✓ Never loses</b> — exhaustively verified.<br>' +
+      'All ' + lines + ' possible opponent lines end in a win or a draw for the agent: ' +
+      '0 losses as X, 0 as O.<br>' +
+      '<code>' + m.stateCount + '</code> positions tabulated · ' +
+      '<code>' + m.episodes.toLocaleString() + '</code> self-play games trained.';
+
+    el.badge.textContent = 'self-play RL · ' + m.episodes.toLocaleString() +
+      ' games · verified never loses';
+
+    var curve = m.learningCurve.map(function (c) {
+      return '<tr><td>' + c.episodes.toLocaleString() + '</td>' +
+        '<td class="num">' + c.loss_lines_as_X + '</td>' +
+        '<td class="num">' + c.loss_lines_as_O + '</td>' +
+        '<td class="num">' + c.vs_random['1'].wins + ' / ' + c.vs_random['1'].draws +
+        ' / ' + c.vs_random['1'].losses + '</td></tr>';
+    }).join('');
+
+    el.howBody.innerHTML =
+      '<p><b>Learning.</b> Nothing about tic-tac-toe is programmed in. Both seats share one value ' +
+      'table and play hundreds of thousands of games against each other, starting from random play. ' +
+      'A position is encoded from the point of view of the player to move and reduced under the ' +
+      '8 symmetries of the square, so the 5,478 reachable positions collapse to ' + m.stateCount +
+      ' canonical states — small enough to tabulate exactly.</p>' +
+      '<p><b>Update rule.</b> After every game each move\'s value is nudged toward a target that ' +
+      'mixes the bootstrapped value of the resulting position (' + (1 - m.lambda).toFixed(1) +
+      ' weight) with the actual result of the game (' + m.lambda.toFixed(1) + ' weight, +1 win / ' +
+      '0 draw / −1 loss). The result term is what lets a rare losing line immediately correct the ' +
+      'move that caused it, instead of waiting for the value to propagate backwards game by game.</p>' +
+      '<p><b>Why it cannot lose.</b> Every position the agent can face is tabulated, so the move it ' +
+      'plays is known in advance. <code>train.py</code> searches the entire game tree against every ' +
+      'legal opponent reply, and <code>node verify_policy.mjs</code> repeats that exhaustive search ' +
+      'against the exact JavaScript that runs in this page — the two agree: 0 losing lines. ' +
+      shieldNote + '</p>' +
+      '<p><b>Learning curve</b> (losing lines found by exhaustive search, and record against a random ' +
+      'opponent as X):</p>' +
+      '<table><tr><th>Self-play games</th><th class="num">loss lines as X</th>' +
+      '<th class="num">loss lines as O</th><th class="num">vs random W / D / L</th></tr>' +
+      curve + '</table>' +
+      '<p>Try <b>Novice</b> and <b>Intermediate</b> to play against those earlier snapshots and feel ' +
+      'the difference. The <b>Perfect</b> level is the fully trained agent.</p>';
+  })();
+
+  newGame(true);
+})();
+</script>
+</body>
+</html>
