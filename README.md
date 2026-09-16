@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icon.png" width="132" alt="Tic-tac-toe board showing the agent's winning line and learned move values">
+</p>
+
 # Tic-Tac-Toe vs. a self-play RL agent
 
 A graphical tic-tac-toe game where you play against an agent that learned the game
@@ -52,7 +56,8 @@ Nothing about strategy is hard-coded. `train.py` runs self-play value learning:
    The `outcome` term matters. With a purely bootstrapped target, a self-play agent
    that cannot yet punish a bad move sees that move as a draw and locks into an
    "everything is a draw" fixed point — that failure mode is reproducible in this
-   repo (it plateaus at 19–102 wrong states). Mixing in the game result lets a rare
+   repo: with a purely bootstrapped target it plateaus with 19 of the 627 states still
+   choosing a losing move. Mixing in the game result lets a rare
    losing line correct the move that caused it immediately.
 
 ### Training result
@@ -127,6 +132,9 @@ npm install jsdom && node ui_test.mjs  # drives the actual page in a headless br
 | `verify_policy.mjs` | Exhaustive end-to-end verification of the exported agent (Node) |
 | `ui_test.mjs` | Headless browser integration test (needs `jsdom`) |
 | `training_report.json` | Machine-readable training and verification report |
+| `assets/icon.svg` / `.png` | Project icon (scalable master + 512px PNG) |
+| `assets/social-preview.png` | GitHub social preview card, 1280×640 |
+| `assets/make_icons.py` | Regenerates both images from source (`python3 assets/make_icons.py`) |
 
 ## Retraining
 
