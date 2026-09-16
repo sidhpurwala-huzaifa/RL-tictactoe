@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <radialGradient id="bgGlow" cx="30%" cy="18%" r="85%">
+      <stop offset="0" stop-color="#12203c"/><stop offset="1" stop-color="#070b16"/>
+    </radialGradient>
+    <radialGradient id="cyanHalo" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="pinkHalo" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#f472b6" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#f472b6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee"/><stop offset="0.55" stop-color="#a78bfa"/>
+      <stop offset="1" stop-color="#f472b6"/>
+    </linearGradient>
+    <linearGradient id="curve" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fb7185"/><stop offset="0.5" stop-color="#fbbf24"/>
+      <stop offset="1" stop-color="#34d399"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bgGlow)"/>
+  <circle cx="120" cy="60" r="330" fill="url(#cyanHalo)"/>
+  <circle cx="1180" cy="620" r="360" fill="url(#pinkHalo)"/>
+  <rect x="131.6" y="151.6" width="93.6" height="93.6" rx="21.6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.11)" stroke-width="2.25"/>
+  <rect x="239.6" y="151.6" width="93.6" height="93.6" rx="21.6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.11)" stroke-width="2.25"/>
+  <rect x="347.6" y="151.6" width="93.6" height="93.6" rx="21.6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.11)" stroke-width="2.25"/>
+  <rect x="131.6" y="259.6" width="93.6" height="93.6" rx="21.6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.11)" stroke-width="2.25"/>
+  <rect x="239.6" y="259.6" width="93.6" height="93.6" rx="21.6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.11)" stroke-width="2.25"/>
+  <rect x="347.6" y="259.6" width="93.6" height="93.6" rx="21.6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.11)" stroke-width="2.25"/>
+  <rect x="131.6" y="367.6" width="93.6" height="93.6" rx="21.6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.11)" stroke-width="2.25"/>
+  <rect x="239.6" y="367.6" width="93.6" height="93.6" rx="21.6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.11)" stroke-width="2.25"/>
+  <rect x="347.6" y="367.6" width="93.6" height="93.6" rx="21.6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.11)" stroke-width="2.25"/>
+  <rect x="239.6" y="151.6" width="93.6" height="93.6" rx="21.6" fill="#34d399" fill-opacity="0.17"/>
+  <rect x="347.6" y="259.6" width="93.6" height="93.6" rx="21.6" fill="#8b97b8" fill-opacity="0.05"/>
+  <rect x="239.6" y="367.6" width="93.6" height="93.6" rx="21.6" fill="#fb7185" fill-opacity="0.17"/>
+  <line x1="394.4" y1="198.4" x2="178.4" y2="414.4" stroke="#34d399" stroke-opacity="0.05" stroke-width="34.2" stroke-linecap="round"/>
+  <line x1="394.4" y1="198.4" x2="178.4" y2="414.4" stroke="#34d399" stroke-opacity="0.09" stroke-width="24.3" stroke-linecap="round"/>
+  <line x1="394.4" y1="198.4" x2="178.4" y2="414.4" stroke="#34d399" stroke-opacity="0.14" stroke-width="17.1" stroke-linecap="round"/>
+  <line x1="394.4" y1="198.4" x2="178.4" y2="414.4" stroke="#34d399" stroke-opacity="0.22" stroke-width="12.6" stroke-linecap="round"/>
+  <g stroke="#22d3ee" stroke-opacity="0.62" stroke-width="11.7" stroke-linecap="round"><line x1="155.0" y1="175.0" x2="201.8" y2="221.8"/><line x1="201.8" y1="175.0" x2="155.0" y2="221.8"/></g>
+  <g stroke="#22d3ee" stroke-opacity="0.62" stroke-width="11.7" stroke-linecap="round"><line x1="155.0" y1="283.0" x2="201.8" y2="329.8"/><line x1="201.8" y1="283.0" x2="155.0" y2="329.8"/></g>
+  <g stroke="#22d3ee" stroke-opacity="0.62" stroke-width="11.7" stroke-linecap="round"><line x1="371.0" y1="391.0" x2="417.8" y2="437.8"/><line x1="417.8" y1="391.0" x2="371.0" y2="437.8"/></g>
+  <circle cx="394.4" cy="198.4" r="24.3" fill="none" stroke="#f472b6" stroke-opacity="1.0" stroke-width="11.7"/>
+  <circle cx="286.4" cy="306.4" r="24.3" fill="none" stroke="#f472b6" stroke-opacity="1.0" stroke-width="11.7"/>
+  <circle cx="178.4" cy="414.4" r="24.3" fill="none" stroke="#f472b6" stroke-opacity="1.0" stroke-width="11.7"/>
+  <line x1="394.4" y1="198.4" x2="178.4" y2="414.4" stroke="#a7f3d0" stroke-opacity="0.95" stroke-width="9.9" stroke-linecap="round"/>
+  <text x="286.4" y="208.3" fill="#34d399" fill-opacity="0.85" font-family="Menlo, monospace" font-size="27.0" text-anchor="middle">+0.8</text>
+  <text x="394.4" y="316.3" fill="#8b97b8" fill-opacity="0.85" font-family="Menlo, monospace" font-size="27.0" text-anchor="middle">0.00</text>
+  <text x="286.4" y="424.3" fill="#fb7185" fill-opacity="0.85" font-family="Menlo, monospace" font-size="27.0" text-anchor="middle">−1.0</text>
+
+  <text x="600" y="196" fill="#e8ecf8" font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="52" font-weight="700">Tic-Tac-Toe vs.</text>
+  <text x="600" y="256" fill="url(#accent)" font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="52" font-weight="700">a self-play RL agent</text>
+
+  <text x="602" y="318" fill="#8b97b8" font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="23">400,000 self-play games &#183; 627 states &#183; 8 seconds to train</text>
+
+  <rect x="600" y="342" width="566" height="52" rx="26" fill="#34d399" fill-opacity="0.12"
+        stroke="#34d399" stroke-opacity="0.35"/>
+  <text x="628" y="375" fill="#a7f3d0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="21" font-weight="600">Verified never loses &#8212; exhaustive game-tree search</text>
+
+  <text x="602" y="452" fill="#8b97b8" font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="18">losing lines found by exhaustive search, as training runs</text>
+  <polyline points="602,498 742,524 882,550" fill="none" stroke="url(#curve)" stroke-width="5"
+            stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#34d399"><circle cx="882" cy="550" r="9"/></g>
+  <g fill="#fbbf24"><circle cx="742" cy="524" r="7"/></g>
+  <g fill="#fb7185"><circle cx="602" cy="498" r="7"/></g>
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700"
+     text-anchor="middle">
+    <text x="602" y="482" fill="#fb7185">166</text>
+    <text x="742" y="508" fill="#fbbf24">81</text>
+    <text x="886" y="534" fill="#34d399">0</text>
+  </g>
+  <g fill="#8b97b8" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17"
+     text-anchor="middle">
+    <text x="602" y="586">1k</text>
+    <text x="742" y="586">20k</text>
+    <text x="882" y="586">400k</text>
+  </g>
+
+  <text x="602" y="614" fill="#8b97b8" font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="19">github.com/sidhpurwala-huzaifa/RL-tictactoe</text>
+</svg>
